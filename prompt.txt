@@ -1,0 +1,46 @@
+PROMPT:
+1) Design and implement a menu-driven 2D Graphics Editor in C using a 2D character array as the drawing canvas. The canvas should initially be filled with the character _ (underscore), and graphical objects should be drawn using the character * (asterisk).
+
+Write functions to draw a circle, rectangle, line, and triangle.
+You should be able to
+      add objects to the picture,
+      delete objects from the picture, and
+       modify objects in the picture.
+Use a 2d array of characters to store the picture.
+Write a function to display the picture.
+
+Additionally, you can use the ncurses package to create menus and draw pictures.
+it is a c programming mini project, help me code.
+2) Out-of-range coordinates and huge radii are accepted, leaving object metadata inconsistent with the canvas and risking pathological redraw times.
+
+Explanation:
+Why this stands out
+The review traced object creation and modification through readObjectData(), then followed rendering through redrawPicture(), drawObject(), drawLine(), drawCircle(), and plotPoint().
+The program tells the user to use coordinates within the canvas range, but that rule is only printed, not enforced.
+What this means in practice
+Objects with vertices outside the canvas are still stored as valid entries in objects[] and shown by listObjects().
+Rendering then silently drops any points outside the canvas in plotPoint(), so the object data and the picture can disagree.
+Very large coordinates or radii also turn redraw into a potentially very long operation, because the drawing loops still walk the full geometric distance even when most points are off-screen.
+With extreme integer values, the line-distance math can also become unsafe.
+Why fixing it helps
+This editor should reject invalid shapes at the input boundary, not carry impossible geometry through the rest of the program.
+Enforcing the canvas contract will make the displayed picture match the stored object list and keep redraw cost bounded by the actual canvas size.
+Referenced Files:
+c:\Users\shrut\OneDrive\Documents\GitHub\Advanced-C-Programming\graphics_editor.c
+
+3) readInt() treats malformed input as valid fragments and loops forever on EOF, making the menu flow unreliable.
+
+Explanation:
+Why this stands out
+The review examined readInt() because every menu choice, object id, coordinate, and radius flows through that single function.
+Its current parsing strategy accepts the numeric prefix of a malformed token and leaves the remaining characters behind for the next prompt.
+What this means in practice
+If a user enters something like a number followed by extra characters, the first prompt succeeds but the leftover text is consumed by the next prompt, which makes the interaction confusing and error-prone.
+If standard input reaches end-of-file, the function never exits its loop, because it keeps treating EOF like a retryable format error.
+That makes redirected input, automated testing, or accidental terminal EOF behave badly.
+Why fixing it helps
+Input parsing is a core contract for this CLI. Each prompt should consume exactly one user response, and unrecoverable input failure should stop the current operation cleanly.
+Making parsing strict here will improve every menu path at once.
+Referenced Files:
+c:\Users\shrut\OneDrive\Documents\GitHub\Advanced-C-Programming\graphics_editor.c
+
